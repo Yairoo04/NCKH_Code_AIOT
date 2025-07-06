@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDoS Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+</head>
+<body>
+    <div class="home-container">
+        <div class="header-container">
+            <h1 class="home-header">DDoS Detection System</h1>
+            <div id="status-display" class="status-normal">Status: Loading...</div>
+        </div>
+        
+        <div class="main-content">
+            <p>Welcome to the DDoS Detection System. The system is currently monitoring your network for potential DDoS attacks.</p>
+            <p>Use the links below to access system features:</p>
+            
+            <div class="links">
+                <a href="/dashboard/" class="dashboard-link">View Dashboard</a>
+                <a href="/api/status" class="api-link">API: Current Status</a>
+                <a href="/api/metrics" class="api-link">API: Traffic Metrics</a>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/home.js') }}"></script>
+</body>
+</html>
