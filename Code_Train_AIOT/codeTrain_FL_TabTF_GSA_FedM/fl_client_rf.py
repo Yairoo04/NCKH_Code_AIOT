@@ -17,6 +17,7 @@ from sklearn.cluster import KMeans
 from torch.utils.data import DataLoader, TensorDataset
 from tab_transformer_pytorch import TabTransformer
 from data_processing import load_and_process_data
+from flwr.common import ndarrays_to_parameters, parameters_to_ndarrays
 
 logging.basicConfig(filename="client_log1.txt", level=logging.INFO, format="%(asctime)s - %(message)s")
 
@@ -135,11 +136,18 @@ class FLClientTabTransformer(fl.client.NumPyClient):
     def _sparsify_gradients(self, gradients, sparsity=SPARSITY):
         if not gradients:
             return gradients
-        flat_grads = torch.cat([g.flatten() for g in gradients])
-        k = int(sparsity * len(flat_grads))
-        threshold = torch.kthvalue(torch.abs(flat_grads), k).values
-        for g in gradients:
-            g.masked_fill_(torch.abs(g) < threshold, 0.0)
+        try:
+            flat_grads = torch.cat([g.flatten() for g in gradients if g is not None])
+            if len(flat_grads) == 0:
+                return gradients
+            k = int(sparsity * len(flat_grads))
+            threshold = torch.kthvalue(torch.abs(flat_grads), k).values
+            for g in gradients:
+                if g is not None:
+                    g.masked_fill_(torch.abs(g) < threshold, 0.0)
+        except Exception as e:
+            print(f"[CLIENT {self.client_id}] Lỗi sparsify gradients: {e}")
+            logging.error(f"[CLIENT {self.client_id}] Lỗi sparsify gradients: {e}")
         return gradients
 
     def _compute_validation_accuracy(self):
@@ -158,9 +166,16 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         return accuracy
 
     def _compute_gradient_norm(self, gradients):
-        flat_grads = torch.cat([g.flatten() for g in gradients])
-        norm = torch.norm(flat_grads, p=2)
-        return norm.item()
+        if not gradients:
+            return 0.0
+        try:
+            flat_grads = torch.cat([g.flatten() for g in gradients if g is not None])
+            norm = torch.norm(flat_grads, p=2)
+            return norm.item()
+        except Exception as e:
+            print(f"[CLIENT {self.client_id}] Lỗi tính gradient norm: {e}")
+            logging.error(f"[CLIENT {self.client_id}] Lỗi tính gradient norm: {e}")
+            return 0.0
 
     def _compute_fedmade_weights(self, accuracy, grad_norm):
         w_perf = np.exp(accuracy) / np.exp(accuracy)  
@@ -180,9 +195,13 @@ class FLClientTabTransformer(fl.client.NumPyClient):
 
     def set_parameters(self, parameters, config=None):
         try:
-            buf = io.BytesIO(parameters[0].tobytes())
+            # Xử lý tham số là danh sách numpy arrays
+            if isinstance(parameters, list):
+                buf = io.BytesIO(parameters[0].tobytes())
+            else:
+                buf = io.BytesIO(parameters_to_ndarrays(parameters)[0].tobytes())
             state_dict = torch.load(buf, weights_only=True)
-            self.model.load_state_dict(state_dict)
+            self.model.load_state_dict(state_dict, strict=True)
             print(f"[CLIENT {self.client_id}] Đã cập nhật tham số mô hình.")
             logging.info(f"[CLIENT {self.client_id}] Đã cập nhật tham số mô hình.")
         except Exception as e:
@@ -236,9 +255,9 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             params_buf.seek(0)
 
             metrics = {
-                "accuracy": acc,
-                "fedmade_weight": weight,
-                "grad_norm": grad_norm,
+                "accuracy": float(acc),
+                "fedmade_weight": float(weight),
+                "grad_norm": float(grad_norm),
                 "cluster_label": int(np.bincount(self.cluster_labels).argmax()),
                 "stop_after_this_round": self.round_count >= MAX_ROUNDS
             }
