@@ -15,9 +15,9 @@ from data_processing import load_and_process_data
 DATA_PATH = "dataset/data_DDoS_1k.csv"
 MODEL_DIR = "models_FL_Tab_GSA_FedM"
 AGGREGATED_MODEL_PATH = os.path.join(MODEL_DIR, "aggregated_model.pt")
-SIMILARITY_THRESHOLD = 0.1  # Giảm ngưỡng để linh hoạt hơn
-LAMBDA_PERF = 0.8  # Tăng trọng số hiệu suất
-LAMBDA_CONV = 0.2  # Giảm trọng số hội tụ
+SIMILARITY_THRESHOLD = 0.1
+LAMBDA_PERF = 0.8 
+LAMBDA_CONV = 0.2 
 MAX_ROUNDS = 3  
 
 def ensure_dir(d):
