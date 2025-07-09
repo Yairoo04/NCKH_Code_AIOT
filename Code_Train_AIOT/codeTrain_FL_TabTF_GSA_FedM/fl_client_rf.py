@@ -8,7 +8,7 @@ import torch.optim as optim
 import numpy as np
 import flwr as fl
 from sklearn.preprocessing import RobustScaler
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import dask.dataframe as dd
@@ -21,15 +21,15 @@ from flwr.common import ndarrays_to_parameters, parameters_to_ndarrays
 
 logging.basicConfig(filename="client_log1.txt", level=logging.INFO, format="%(asctime)s - %(message)s")
 
-DATA_PATH = "dataset/data_DDoS_1k.csv"
-MODEL_DIR = "models_FL_Tab_GSA_FedM"
+DATA_PATH = "dataset/data_All_1k.csv"
+MODEL_DIR = "models_FL_Tab_GSA_FedM_1k"
 MODEL_PATH = os.path.join(MODEL_DIR, "model.pt")
 SCALER_PATH = os.path.join(MODEL_DIR, "scaler.pkl")
 ENCODER_PATH = os.path.join(MODEL_DIR, "label_encoder.pkl")
 EPOCHS = 30
 BATCH_SIZE = 256 
 LR = 0.001  
-SPARSITY = 0.7  
+SPARSITY = 0.5
 SIMILARITY_THRESHOLD = 0.3 
 LAMBDA_PERF = 0.6 
 LAMBDA_CONV = 0.4 
@@ -48,6 +48,7 @@ class FLClientTabTransformer(fl.client.NumPyClient):
 
         try:
             self.X_train_raw, self.y_train, self.categorical_cols, self.num_classes, self.le, self.cluster_labels = load_and_process_data(DATA_PATH)
+            print(f"[CLIENT {client_id}] Đã load dữ liệu: {len(self.X_train_raw)} mẫu, {len(self.categorical_cols)} cột phân loại, {self.num_classes} lớp")
             logging.info(f"[CLIENT {client_id}] Đã load dữ liệu: {len(self.X_train_raw)} mẫu, {len(self.categorical_cols)} cột phân loại, {self.num_classes} lớp")
         except Exception as e:
             print(f"[CLIENT {client_id}] Lỗi khi load dữ liệu: {str(e)}")
@@ -104,6 +105,7 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             self._load_model_and_scaler()
         else:
             print(f"[CLIENT {client_id}] Tạo mô hình mới...")
+            logging.info(f"[CLIENT {client_id}] Tạo mô hình mới...")
             self._save_state()
 
         print(f"[CLIENT {client_id}] Mô hình sẵn sàng với {self.num_classes} lớp đầu ra.")
@@ -114,6 +116,7 @@ class FLClientTabTransformer(fl.client.NumPyClient):
 
     def _load_model_and_scaler(self):
         print(f"[CLIENT {self.client_id}] Tải lại model/scaler/encoder...")
+        logging.info(f"[CLIENT {self.client_id}] Tải lại model/scaler/encoder...")
         try:
             state_dict = torch.load(MODEL_PATH, weights_only=True)
             self.model.load_state_dict(state_dict)
@@ -140,11 +143,13 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             flat_grads = torch.cat([g.flatten() for g in gradients if g is not None])
             if len(flat_grads) == 0:
                 return gradients
-            k = int(sparsity * len(flat_grads))
-            threshold = torch.kthvalue(torch.abs(flat_grads), k).values
+            k = int((1 - sparsity) * len(flat_grads))
+            threshold = torch.kthvalue(torch.abs(flat_grads), len(flat_grads) - k).values
             for g in gradients:
                 if g is not None:
                     g.masked_fill_(torch.abs(g) < threshold, 0.0)
+            print(f"[CLIENT {self.client_id}] Sparsified gradients, sparsity: {sparsity}, threshold: {threshold:.4f}")
+            logging.info(f"[CLIENT {self.client_id}] Sparsified gradients, sparsity: {sparsity}, threshold: {threshold:.4f}")
         except Exception as e:
             print(f"[CLIENT {self.client_id}] Lỗi sparsify gradients: {e}")
             logging.error(f"[CLIENT {self.client_id}] Lỗi sparsify gradients: {e}")
@@ -171,6 +176,8 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         try:
             flat_grads = torch.cat([g.flatten() for g in gradients if g is not None])
             norm = torch.norm(flat_grads, p=2)
+            print(f"[CLIENT {self.client_id}] Gradient norm: {norm.item():.4f}")
+            logging.info(f"[CLIENT {self.client_id}] Gradient norm: {norm.item():.4f}")
             return norm.item()
         except Exception as e:
             print(f"[CLIENT {self.client_id}] Lỗi tính gradient norm: {e}")
@@ -178,9 +185,11 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             return 0.0
 
     def _compute_fedmade_weights(self, accuracy, grad_norm):
-        w_perf = np.exp(accuracy) / np.exp(accuracy)  
-        w_conv = np.exp(-grad_norm) / np.exp(-grad_norm)  
-        w = LAMBDA_PERF * w_perf + LAMBDA_CONV * w_conv 
+        w_perf = np.exp(accuracy)
+        w_conv = np.exp(-grad_norm)
+        w = LAMBDA_PERF * w_perf + LAMBDA_CONV * w_conv
+        print(f"[CLIENT {self.client_id}] FedMADE weights: w_perf={w_perf:.4f}, w_conv={w_conv:.4f}, w={w:.4f}")
+        logging.info(f"[CLIENT {self.client_id}] FedMADE weights: w_perf={w_perf:.4f}, w_conv={w_conv:.4f}, w={w:.4f}")
         return w
 
     def get_parameters(self, config=None):
@@ -195,15 +204,14 @@ class FLClientTabTransformer(fl.client.NumPyClient):
 
     def set_parameters(self, parameters, config=None):
         try:
-            # Xử lý tham số là danh sách numpy arrays
             if isinstance(parameters, list):
                 buf = io.BytesIO(parameters[0].tobytes())
             else:
                 buf = io.BytesIO(parameters_to_ndarrays(parameters)[0].tobytes())
             state_dict = torch.load(buf, weights_only=True)
             self.model.load_state_dict(state_dict, strict=True)
-            print(f"[CLIENT {self.client_id}] Đã cập nhật tham số mô hình.")
-            logging.info(f"[CLIENT {self.client_id}] Đã cập nhật tham số mô hình.")
+            print(f"[CLIENT {self.client_id}] Đã cập nhật tham số mô hình từ server.")
+            logging.info(f"[CLIENT {self.client_id}] Đã cập nhật tham số mô hình từ server.")
         except Exception as e:
             print(f"[CLIENT {self.client_id}] Lỗi khi cập nhật tham số: {str(e)}")
             logging.error(f"[CLIENT {self.client_id}] Lỗi khi cập nhật tham số: {str(e)}")
@@ -220,6 +228,7 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             raise RuntimeError(f"Client {self.client_id} đã hoàn thành {MAX_ROUNDS} vòng liên kết.")
 
         try:
+            # Always load the server's aggregated model parameters
             self.set_parameters(parameters)
             self.model.train()
             optimizer = optim.Adam(self.model.parameters(), lr=LR, weight_decay=1e-5)
@@ -245,8 +254,9 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             torch.save(gradients, grad_buf)
             grad_buf.seek(0)
 
-            self._save_state()
-            acc = self.evaluate(parameters, config)[0]
+            self._save_state()  # Save model state after training
+            eval_metrics = self.evaluate(parameters, config)
+            acc = eval_metrics[0]
             print(f"[CLIENT {self.client_id}] Accuracy sau fit: {acc:.4f}")
             logging.info(f"[CLIENT {self.client_id}] Accuracy sau fit: {acc:.4f}")
 
@@ -256,6 +266,9 @@ class FLClientTabTransformer(fl.client.NumPyClient):
 
             metrics = {
                 "accuracy": float(acc),
+                "f1_score": float(eval_metrics[2]["f1_score"]),
+                "precision": float(eval_metrics[2]["precision"]),
+                "recall": float(eval_metrics[2]["recall"]),
                 "fedmade_weight": float(weight),
                 "grad_norm": float(grad_norm),
                 "cluster_label": int(np.bincount(self.cluster_labels).argmax()),
@@ -277,23 +290,33 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             raise
 
     def evaluate(self, parameters, config=None):
-        if self.round_count > MAX_ROUNDS:
-            print(f"[CLIENT {self.client_id}] Đã vượt quá {MAX_ROUNDS} vòng liên kết, từ chối đánh giá.")
-            logging.info(f"[CLIENT {self.client_id}] Đã vượt quá {MAX_ROUNDS} vòng liên kết, từ chối đánh giá.")
-            raise RuntimeError(f"Client {self.client_id} đã hoàn thành {MAX_ROUNDS} vòng liên kết.")
-
+        print(f"[CLIENT {self.client_id}] Bắt đầu đánh giá với config: {config}")
+        logging.info(f"[CLIENT {self.client_id}] Bắt đầu đánh giá với config: {config}")
         try:
             self.set_parameters(parameters)
             self.model.eval()
+            y_pred_list = []
+            y_true_list = []
             with torch.no_grad():
-                out = self.model(self.X_test_cat, self.X_test_cont)
-                y_pred = torch.argmax(out, dim=1).numpy()
-                acc = accuracy_score(self.y_test.numpy(), y_pred)
-                print(f"[CLIENT {self.client_id}] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.num_classes).tolist()}")
-                print(f"[CLIENT {self.client_id}] Phân phối nhãn thực: {np.bincount(self.y_test.numpy(), minlength=self.num_classes).tolist()}")
-            print(f"[CLIENT {self.client_id}] Accuracy test: {acc:.4f}")
-            logging.info(f"[CLIENT {self.client_id}] Accuracy test: {acc:.4f}")
-            return float(acc), len(self.y_test), {"accuracy": float(acc)}
+                for cat_data, cont_data, labels in self.test_loader:
+                    out = self.model(cat_data, cont_data)
+                    y_pred = torch.argmax(out, dim=1)
+                    y_pred_list.append(y_pred.numpy())
+                    y_true_list.append(labels.numpy())
+            y_pred = np.concatenate(y_pred_list)
+            y_true = np.concatenate(y_true_list)
+            acc = accuracy_score(y_true, y_pred)
+            f1 = f1_score(y_true, y_pred, average='weighted', zero_division=0)
+            precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
+            recall = recall_score(y_true, y_pred, average='weighted', zero_division=0)
+            num_examples = len(y_true)
+            print(f"[CLIENT {self.client_id}] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.num_classes).tolist()}")
+            print(f"[CLIENT {self.client_id}] Phân phối nhãn thực: {np.bincount(y_true, minlength=self.num_classes).tolist()}")
+            print(f"[CLIENT {self.client_id}] Accuracy: {acc:.4f}, F1-score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
+            logging.info(f"[CLIENT {self.client_id}] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.num_classes).tolist()}")
+            logging.info(f"[CLIENT {self.client_id}] Phân phối nhãn thực: {np.bincount(y_true, minlength=self.num_classes).tolist()}")
+            logging.info(f"[CLIENT {self.client_id}] Accuracy: {acc:.4f}, F1-score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
+            return float(acc), num_examples, {"accuracy": acc, "f1_score": f1, "precision": precision, "recall": recall}
         except Exception as e:
             print(f"[CLIENT {self.client_id}] Lỗi khi đánh giá: {str(e)}")
             logging.error(f"[CLIENT {self.client_id}] Lỗi khi đánh giá: {str(e)}")
