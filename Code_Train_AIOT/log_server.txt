@@ -1,6 +1,6 @@
-2025-07-09 20:23:46,371 - [SERVER] Kh\u1edfi t\u1ea1o server...
-2025-07-09 20:23:47,985 - [SERVER] TabTransformer s\u1eb5n sàng - {'categories': [], 'num_continuous': 31, 'dim': 128, 'dim_out': 34, 'depth': 6, 'heads': 8, 'attn_dropout': 0.3, 'ff_dropout': 0.3, 'mlp_hidden_mults': (4, 2), 'mlp_act': ReLU()}
-2025-07-09 20:23:47,985 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
+2025-07-10 17:33:50,226 - [SERVER] Kh\u1edfi t\u1ea1o server...
+2025-07-10 17:34:00,476 - [SERVER] TabTransformer s\u1eb5n sàng - {'categories': [], 'num_continuous': 23, 'dim': 128, 'dim_out': 13, 'depth': 6, 'heads': 8, 'attn_dropout': 0.3, 'ff_dropout': 0.3, 'mlp_hidden_mults': (4, 2), 'mlp_act': ReLU()}
+2025-07-10 17:34:00,515 - DEPRECATED FEATURE: flwr.server.start_server() is deprecated.
 	Instead, use the `flower-superlink` CLI command to start a SuperLink as shown below:
 
 		$ flower-superlink --insecure
@@ -14,102 +14,103 @@
             This is a deprecated feature. It will be removed
             entirely in future versions of Flower.
         
-2025-07-09 20:23:47,986 - Starting Flower server, config: num_rounds=3, no round_timeout
-2025-07-09 20:23:48,009 - Flower ECE: gRPC server running (3 rounds), SSL is disabled
-2025-07-09 20:23:48,009 - [INIT]
-2025-07-09 20:23:48,009 - Requesting initial parameters from one random client
-2025-07-09 20:23:50,483 - Received initial parameters from one random client
-2025-07-09 20:23:50,483 - Starting evaluation of initial global parameters
-2025-07-09 20:23:50,483 - Evaluation returned no results (`None`)
-2025-07-09 20:23:50,483 - 
-2025-07-09 20:23:50,484 - [ROUND 1]
-2025-07-09 20:23:52,806 - configure_fit: strategy sampled 2 clients (out of 2)
-2025-07-09 20:24:06,599 - aggregate_fit: received 2 results and 0 failures
-2025-07-09 20:24:06,601 - [SERVER] ROUND 1 v\u1edbi 2 clients
-2025-07-09 20:24:06,601 - [SERVER] Nh\u1eadn t\u1eeb client c8b14408df5a4e0a84d2a4ab8238a046: tensors=2
-2025-07-09 20:24:06,624 - [SERVER] Nh\u1eadn t\u1eeb client 4307ab870a29429d81cc4675c994beae: tensors=2
-2025-07-09 20:24:06,646 - [SERVER] Tr\u1ecdng s\u1ed1 FedMADE: [np.float64(0.46620979037643057), np.float64(0.5337902096235694)]
-2025-07-09 20:24:06,647 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: 0.1430
-2025-07-09 20:24:06,647 - [SERVER] Client c8b14408df5a4e0a84d2a4ab8238a046: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = 0.1430, Là inlier: False
-2025-07-09 20:24:06,647 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: 0.1430
-2025-07-09 20:24:06,647 - [SERVER] Client 4307ab870a29429d81cc4675c994beae: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = 0.1430, Là inlier: False
-2025-07-09 20:24:06,647 - [SERVER] Không có gradient nào v\u01b0\u1ee3t ng\u01b0\u1ee1ng t\u01b0\u01a1ng \u0111\u1ed3ng! S\u1eed d\u1ee5ng t\u1ea5t c\u1ea3 client \u0111\u1ec3 t\u1ed5ng h\u1ee3p.
-2025-07-09 20:24:06,829 - [SERVER] \u0110ánh giá - Accuracy: 0.8347, F1-score: 0.8230, Precision: 0.8643, Recall: 0.8347
-2025-07-09 20:24:06,829 - [SERVER] Phân ph\u1ed1i d\u1ef1 \u0111oán: [106, 225, 180, 290, 201, 199, 199, 200, 201, 200, 199, 392, 9, 199, 199, 200, 131, 267, 199, 201, 201, 200, 99, 300, 200, 182, 138, 166, 276, 150, 270, 148, 225, 248]
-2025-07-09 20:24:06,829 - [SERVER] Phân ph\u1ed1i nhãn th\u1ef1c: [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]
-2025-07-09 20:24:06,829 - [SERVER] Th\u1eddi gian vòng 1: 0.23 giây
-2025-07-09 20:24:06,838 - [SERVER] \u0110ã l\u01b0u mô hình t\u1ed5ng h\u1ee3p vào models_FL_Tab_GSA_FedM_1k\aggregated_model_round_1.pt
-2025-07-09 20:24:06,852 - configure_evaluate: strategy sampled 2 clients (out of 2)
-2025-07-09 20:24:06,954 - aggregate_evaluate: received 2 results and 0 failures
-2025-07-09 20:24:06,954 - 
-2025-07-09 20:24:06,954 - [ROUND 2]
-2025-07-09 20:24:06,986 - [SERVER] \u0110ã t\u1ea3i mô hình t\u1eeb models_FL_Tab_GSA_FedM_1k\aggregated_model_round_1.pt
-2025-07-09 20:24:06,986 - configure_fit: strategy sampled 2 clients (out of 2)
-2025-07-09 20:24:21,053 - aggregate_fit: received 2 results and 0 failures
-2025-07-09 20:24:21,053 - [SERVER] ROUND 2 v\u1edbi 2 clients
-2025-07-09 20:24:21,053 - [SERVER] Nh\u1eadn t\u1eeb client c8b14408df5a4e0a84d2a4ab8238a046: tensors=2
-2025-07-09 20:24:21,075 - [SERVER] Nh\u1eadn t\u1eeb client 4307ab870a29429d81cc4675c994beae: tensors=2
-2025-07-09 20:24:21,096 - [SERVER] Tr\u1ecdng s\u1ed1 FedMADE: [np.float64(0.48293476630171545), np.float64(0.5170652336982846)]
-2025-07-09 20:24:21,097 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: 0.8837
-2025-07-09 20:24:21,097 - [SERVER] Client c8b14408df5a4e0a84d2a4ab8238a046: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = 0.8837, Là inlier: True
-2025-07-09 20:24:21,097 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: 0.8837
-2025-07-09 20:24:21,097 - [SERVER] Client 4307ab870a29429d81cc4675c994beae: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = 0.8837, Là inlier: True
-2025-07-09 20:24:21,287 - [SERVER] \u0110ánh giá - Accuracy: 0.8347, F1-score: 0.8230, Precision: 0.8643, Recall: 0.8347
-2025-07-09 20:24:21,287 - [SERVER] Phân ph\u1ed1i d\u1ef1 \u0111oán: [106, 225, 180, 290, 201, 199, 199, 200, 201, 200, 199, 392, 9, 199, 199, 200, 131, 267, 199, 201, 201, 200, 99, 300, 200, 182, 138, 166, 276, 150, 270, 148, 225, 248]
-2025-07-09 20:24:21,287 - [SERVER] Phân ph\u1ed1i nhãn th\u1ef1c: [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]
-2025-07-09 20:24:21,287 - [SERVER] \u0110ã h\u1ed9i t\u1ee5 t\u1ea1i vòng 2 v\u1edbi chênh l\u1ec7ch accuracy: 0.000000
-2025-07-09 20:24:21,287 - [SERVER] Th\u1eddi gian vòng 2: 0.23 giây
-2025-07-09 20:24:21,295 - [SERVER] \u0110ã l\u01b0u mô hình t\u1ed5ng h\u1ee3p vào models_FL_Tab_GSA_FedM_1k\aggregated_model_round_2.pt
-2025-07-09 20:24:21,307 - configure_evaluate: strategy sampled 2 clients (out of 2)
-2025-07-09 20:24:21,414 - aggregate_evaluate: received 2 results and 0 failures
-2025-07-09 20:24:21,414 - 
-2025-07-09 20:24:21,415 - [ROUND 3]
-2025-07-09 20:24:21,435 - [SERVER] \u0110ã t\u1ea3i mô hình t\u1eeb models_FL_Tab_GSA_FedM_1k\aggregated_model_round_2.pt
-2025-07-09 20:24:21,435 - configure_fit: strategy sampled 2 clients (out of 2)
-2025-07-09 20:24:35,431 - aggregate_fit: received 2 results and 0 failures
-2025-07-09 20:24:35,431 - [SERVER] ROUND 3 v\u1edbi 2 clients
-2025-07-09 20:24:35,431 - [SERVER] Nh\u1eadn t\u1eeb client c8b14408df5a4e0a84d2a4ab8238a046: tensors=2
-2025-07-09 20:24:35,453 - [SERVER] Nh\u1eadn t\u1eeb client 4307ab870a29429d81cc4675c994beae: tensors=2
-2025-07-09 20:24:35,476 - [SERVER] Tr\u1ecdng s\u1ed1 FedMADE: [np.float64(0.3626953085197766), np.float64(0.6373046914802234)]
-2025-07-09 20:24:35,477 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: -0.9713
-2025-07-09 20:24:35,477 - [SERVER] Client c8b14408df5a4e0a84d2a4ab8238a046: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = -0.9713, Là inlier: False
-2025-07-09 20:24:35,477 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: -0.9713
-2025-07-09 20:24:35,477 - [SERVER] Client 4307ab870a29429d81cc4675c994beae: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = -0.9713, Là inlier: False
-2025-07-09 20:24:35,477 - [SERVER] Không có gradient nào v\u01b0\u1ee3t ng\u01b0\u1ee1ng t\u01b0\u01a1ng \u0111\u1ed3ng! S\u1eed d\u1ee5ng t\u1ea5t c\u1ea3 client \u0111\u1ec3 t\u1ed5ng h\u1ee3p.
-2025-07-09 20:24:35,666 - [SERVER] \u0110ánh giá - Accuracy: 0.8347, F1-score: 0.8230, Precision: 0.8643, Recall: 0.8347
-2025-07-09 20:24:35,666 - [SERVER] Phân ph\u1ed1i d\u1ef1 \u0111oán: [106, 225, 180, 290, 201, 199, 199, 200, 201, 200, 199, 392, 9, 199, 199, 200, 131, 267, 199, 201, 201, 200, 99, 300, 200, 182, 138, 166, 276, 150, 270, 148, 225, 248]
-2025-07-09 20:24:35,667 - [SERVER] Phân ph\u1ed1i nhãn th\u1ef1c: [200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200, 200]
-2025-07-09 20:24:35,667 - [SERVER] Th\u1eddi gian vòng 3: 0.24 giây
-2025-07-09 20:24:35,677 - [SERVER] \u0110ã l\u01b0u mô hình t\u1ed5ng h\u1ee3p vào models_FL_Tab_GSA_FedM_1k\aggregated_model_round_3.pt
-2025-07-09 20:24:35,688 - configure_evaluate: strategy sampled 2 clients (out of 2)
-2025-07-09 20:24:35,794 - aggregate_evaluate: received 2 results and 0 failures
-2025-07-09 20:24:35,794 - 
-2025-07-09 20:24:35,794 - [SUMMARY]
-2025-07-09 20:24:35,794 - Run finished 3 round(s) in 45.31s
-2025-07-09 20:24:35,795 - 	History (loss, distributed):
-2025-07-09 20:24:35,795 - 		round 1: 0.9955882430076599
-2025-07-09 20:24:35,795 - 		round 2: 0.9955882430076599
-2025-07-09 20:24:35,795 - 		round 3: 0.9955882430076599
-2025-07-09 20:24:35,795 - 	History (metrics, distributed, fit):
-2025-07-09 20:24:35,795 - 	{'accuracy': [(1, 0.8347058823529412),
-2025-07-09 20:24:35,795 - 	              (2, 0.8347058823529412),
-2025-07-09 20:24:35,795 - 	              (3, 0.8347058823529412)],
-2025-07-09 20:24:35,795 - 	 'f1_score': [(1, 0.8230165115265642),
-2025-07-09 20:24:35,795 - 	              (2, 0.8230165115265642),
-2025-07-09 20:24:35,796 - 	              (3, 0.8230165115265642)],
-2025-07-09 20:24:35,796 - 	 'precision': [(1, 0.8642545288994505),
-2025-07-09 20:24:35,796 - 	               (2, 0.8642545288994505),
-2025-07-09 20:24:35,796 - 	               (3, 0.8642545288994505)],
-2025-07-09 20:24:35,796 - 	 'recall': [(1, 0.8347058823529412),
-2025-07-09 20:24:35,796 - 	            (2, 0.8347058823529412),
-2025-07-09 20:24:35,796 - 	            (3, 0.8347058823529412)]}
-2025-07-09 20:24:35,796 - 	History (metrics, distributed, evaluate):
-2025-07-09 20:24:35,796 - 	{'accuracy': [(1, 0.0), (2, 0.0), (3, 0.0)],
-2025-07-09 20:24:35,796 - 	 'f1_score': [(1, 0.0), (2, 0.0), (3, 0.0)],
-2025-07-09 20:24:35,796 - 	 'precision': [(1, 0.0), (2, 0.0), (3, 0.0)],
-2025-07-09 20:24:35,797 - 	 'recall': [(1, 0.0), (2, 0.0), (3, 0.0)]}
-2025-07-09 20:24:35,797 - 
-2025-07-09 20:24:35,822 - [SERVER] \u0110ã l\u01b0u mô hình t\u1ed5ng h\u1ee3p cu\u1ed1i cùng vào models_FL_Tab_GSA_FedM_1k\aggregated_model.pt
-2025-07-09 20:24:35,822 - [SERVER] Th\u1eddi gian h\u1ed9i t\u1ee5: 0.70 giây
-2025-07-09 20:24:35,822 - [SERVER] Mô hình h\u1ed9i t\u1ee5 t\u1ea1i vòng 2
-2025-07-09 20:24:35,822 - [SERVER] Server \u0111ã d\u1eebng.
+2025-07-10 17:34:00,516 - Starting Flower server, config: num_rounds=3, no round_timeout
+2025-07-10 17:34:00,559 - Flower ECE: gRPC server running (3 rounds), SSL is disabled
+2025-07-10 17:34:00,559 - [INIT]
+2025-07-10 17:34:00,559 - Requesting initial parameters from one random client
+2025-07-10 17:34:01,825 - Received initial parameters from one random client
+2025-07-10 17:34:01,825 - Starting evaluation of initial global parameters
+2025-07-10 17:34:01,825 - Evaluation returned no results (`None`)
+2025-07-10 17:34:01,826 - 
+2025-07-10 17:34:01,826 - [ROUND 1]
+2025-07-10 17:34:01,826 - configure_fit: strategy sampled 2 clients (out of 2)
+2025-07-10 17:49:10,488 - aggregate_fit: received 2 results and 0 failures
+2025-07-10 17:49:10,488 - [SERVER] ROUND 1 v\u1edbi 2 clients
+2025-07-10 17:49:10,488 - [SERVER] Nh\u1eadn t\u1eeb client 1444c9a0c6c2434d90381fb88e992bf6: tensors=2
+2025-07-10 17:49:10,513 - [SERVER] Nh\u1eadn t\u1eeb client 1f201eb3215e4040a0b655fa73bf9107: tensors=2
+2025-07-10 17:49:10,535 - [SERVER] Tr\u1ecdng s\u1ed1 FedMADE: [np.float64(0.4983502675723837), np.float64(0.5016497324276163)]
+2025-07-10 17:49:10,536 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: -0.8463
+2025-07-10 17:49:10,536 - [SERVER] Client 1444c9a0c6c2434d90381fb88e992bf6: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = -0.8463, Là inlier: False
+2025-07-10 17:49:10,536 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: -0.8463
+2025-07-10 17:49:10,536 - [SERVER] Client 1f201eb3215e4040a0b655fa73bf9107: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = -0.8463, Là inlier: False
+2025-07-10 17:49:10,536 - [SERVER] Không có gradient nào v\u01b0\u1ee3t ng\u01b0\u1ee1ng t\u01b0\u01a1ng \u0111\u1ed3ng! S\u1eed d\u1ee5ng t\u1ea5t c\u1ea3 client \u0111\u1ec3 t\u1ed5ng h\u1ee3p.
+2025-07-10 17:49:10,982 - [SERVER] \u0110ánh giá - Accuracy: 0.9994, F1-score: 0.9994, Precision: 0.9994, Recall: 0.9994
+2025-07-10 17:49:10,983 - [SERVER] Phân ph\u1ed1i d\u1ef1 \u0111oán: [3612, 54314, 5579, 43816, 86214, 54760, 45631, 4528, 56459, 47044, 48131, 50696, 54702]
+2025-07-10 17:49:10,983 - [SERVER] Phân ph\u1ed1i nhãn th\u1ef1c: [3598, 54302, 5519, 43844, 86229, 54719, 45717, 4480, 56458, 47079, 48161, 50702, 54678]
+2025-07-10 17:49:11,009 - [SERVER] Th\u1eddi gian vòng 1: 0.52 giây
+2025-07-10 17:49:11,018 - [SERVER] \u0110ã l\u01b0u mô hình t\u1ed5ng h\u1ee3p vào models_FL_Tab_GSA_FedM\aggregated_model_round_1.pt
+2025-07-10 17:49:11,030 - configure_evaluate: strategy sampled 2 clients (out of 2)
+2025-07-10 17:49:14,665 - aggregate_evaluate: received 2 results and 0 failures
+2025-07-10 17:49:14,665 - 
+2025-07-10 17:49:14,665 - [ROUND 2]
+2025-07-10 17:49:14,687 - [SERVER] \u0110ã t\u1ea3i mô hình t\u1eeb models_FL_Tab_GSA_FedM\aggregated_model_round_1.pt
+2025-07-10 17:49:14,687 - configure_fit: strategy sampled 2 clients (out of 2)
+2025-07-10 18:05:06,884 - aggregate_fit: received 2 results and 0 failures
+2025-07-10 18:05:06,884 - [SERVER] ROUND 2 v\u1edbi 2 clients
+2025-07-10 18:05:06,885 - [SERVER] Nh\u1eadn t\u1eeb client 1444c9a0c6c2434d90381fb88e992bf6: tensors=2
+2025-07-10 18:05:06,906 - [SERVER] Nh\u1eadn t\u1eeb client 1f201eb3215e4040a0b655fa73bf9107: tensors=2
+2025-07-10 18:05:06,929 - [SERVER] Tr\u1ecdng s\u1ed1 FedMADE: [np.float64(0.49688322932067863), np.float64(0.5031167706793214)]
+2025-07-10 18:05:06,930 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: -0.9310
+2025-07-10 18:05:06,930 - [SERVER] Client 1444c9a0c6c2434d90381fb88e992bf6: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = -0.9310, Là inlier: False
+2025-07-10 18:05:06,930 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: -0.9310
+2025-07-10 18:05:06,930 - [SERVER] Client 1f201eb3215e4040a0b655fa73bf9107: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = -0.9310, Là inlier: False
+2025-07-10 18:05:06,930 - [SERVER] Không có gradient nào v\u01b0\u1ee3t ng\u01b0\u1ee1ng t\u01b0\u01a1ng \u0111\u1ed3ng! S\u1eed d\u1ee5ng t\u1ea5t c\u1ea3 client \u0111\u1ec3 t\u1ed5ng h\u1ee3p.
+2025-07-10 18:05:07,381 - [SERVER] \u0110ánh giá - Accuracy: 0.9994, F1-score: 0.9994, Precision: 0.9994, Recall: 0.9994
+2025-07-10 18:05:07,382 - [SERVER] Phân ph\u1ed1i d\u1ef1 \u0111oán: [3612, 54314, 5579, 43816, 86214, 54760, 45631, 4528, 56459, 47044, 48131, 50696, 54702]
+2025-07-10 18:05:07,382 - [SERVER] Phân ph\u1ed1i nhãn th\u1ef1c: [3598, 54302, 5519, 43844, 86229, 54719, 45717, 4480, 56458, 47079, 48161, 50702, 54678]
+2025-07-10 18:05:07,408 - [SERVER] \u0110ã h\u1ed9i t\u1ee5 t\u1ea1i vòng 2 v\u1edbi chênh l\u1ec7ch accuracy: 0.000000
+2025-07-10 18:05:07,408 - [SERVER] Th\u1eddi gian vòng 2: 0.52 giây
+2025-07-10 18:05:07,416 - [SERVER] \u0110ã l\u01b0u mô hình t\u1ed5ng h\u1ee3p vào models_FL_Tab_GSA_FedM\aggregated_model_round_2.pt
+2025-07-10 18:05:07,428 - configure_evaluate: strategy sampled 2 clients (out of 2)
+2025-07-10 18:05:11,465 - aggregate_evaluate: received 2 results and 0 failures
+2025-07-10 18:05:11,465 - 
+2025-07-10 18:05:11,465 - [ROUND 3]
+2025-07-10 18:05:11,491 - [SERVER] \u0110ã t\u1ea3i mô hình t\u1eeb models_FL_Tab_GSA_FedM\aggregated_model_round_2.pt
+2025-07-10 18:05:11,491 - configure_fit: strategy sampled 2 clients (out of 2)
+2025-07-10 18:20:32,340 - aggregate_fit: received 2 results and 0 failures
+2025-07-10 18:20:32,340 - [SERVER] ROUND 3 v\u1edbi 2 clients
+2025-07-10 18:20:32,340 - [SERVER] Nh\u1eadn t\u1eeb client 1f201eb3215e4040a0b655fa73bf9107: tensors=2
+2025-07-10 18:20:32,361 - [SERVER] Nh\u1eadn t\u1eeb client 1444c9a0c6c2434d90381fb88e992bf6: tensors=2
+2025-07-10 18:20:32,383 - [SERVER] Tr\u1ecdng s\u1ed1 FedMADE: [np.float64(0.5009831123683642), np.float64(0.4990168876316359)]
+2025-07-10 18:20:32,383 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: -0.3323
+2025-07-10 18:20:32,384 - [SERVER] Client 1f201eb3215e4040a0b655fa73bf9107: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = -0.3323, Là inlier: False
+2025-07-10 18:20:32,384 - [SERVER] \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng gradient: -0.3323
+2025-07-10 18:20:32,384 - [SERVER] Client 1444c9a0c6c2434d90381fb88e992bf6: \u0110\u1ed9 t\u01b0\u01a1ng \u0111\u1ed3ng trung bình = -0.3323, Là inlier: False
+2025-07-10 18:20:32,384 - [SERVER] Không có gradient nào v\u01b0\u1ee3t ng\u01b0\u1ee1ng t\u01b0\u01a1ng \u0111\u1ed3ng! S\u1eed d\u1ee5ng t\u1ea5t c\u1ea3 client \u0111\u1ec3 t\u1ed5ng h\u1ee3p.
+2025-07-10 18:20:32,815 - [SERVER] \u0110ánh giá - Accuracy: 0.9994, F1-score: 0.9994, Precision: 0.9994, Recall: 0.9994
+2025-07-10 18:20:32,815 - [SERVER] Phân ph\u1ed1i d\u1ef1 \u0111oán: [3612, 54314, 5579, 43816, 86214, 54760, 45631, 4528, 56459, 47044, 48131, 50696, 54702]
+2025-07-10 18:20:32,816 - [SERVER] Phân ph\u1ed1i nhãn th\u1ef1c: [3598, 54302, 5519, 43844, 86229, 54719, 45717, 4480, 56458, 47079, 48161, 50702, 54678]
+2025-07-10 18:20:32,843 - [SERVER] Th\u1eddi gian vòng 3: 0.50 giây
+2025-07-10 18:20:32,851 - [SERVER] \u0110ã l\u01b0u mô hình t\u1ed5ng h\u1ee3p vào models_FL_Tab_GSA_FedM\aggregated_model_round_3.pt
+2025-07-10 18:20:32,864 - configure_evaluate: strategy sampled 2 clients (out of 2)
+2025-07-10 18:20:36,609 - aggregate_evaluate: received 2 results and 0 failures
+2025-07-10 18:20:36,609 - 
+2025-07-10 18:20:36,610 - [SUMMARY]
+2025-07-10 18:20:36,610 - Run finished 3 round(s) in 2794.78s
+2025-07-10 18:20:36,610 - 	History (loss, distributed):
+2025-07-10 18:20:36,610 - 		round 1: 0.9993807077407837
+2025-07-10 18:20:36,610 - 		round 2: 0.9993807077407837
+2025-07-10 18:20:36,611 - 		round 3: 0.9993807077407837
+2025-07-10 18:20:36,611 - 	History (metrics, distributed, fit):
+2025-07-10 18:20:36,611 - 	{'accuracy': [(1, 0.9993807224664528),
+2025-07-10 18:20:36,611 - 	              (2, 0.9993807224664528),
+2025-07-10 18:20:36,611 - 	              (3, 0.9993807224664528)],
+2025-07-10 18:20:36,611 - 	 'f1_score': [(1, 0.9993813642068392),
+2025-07-10 18:20:36,611 - 	              (2, 0.9993813642068392),
+2025-07-10 18:20:36,611 - 	              (3, 0.9993813642068392)],
+2025-07-10 18:20:36,611 - 	 'precision': [(1, 0.9993833305474646),
+2025-07-10 18:20:36,612 - 	               (2, 0.9993833305474646),
+2025-07-10 18:20:36,612 - 	               (3, 0.9993833305474646)],
+2025-07-10 18:20:36,612 - 	 'recall': [(1, 0.9993807224664528),
+2025-07-10 18:20:36,612 - 	            (2, 0.9993807224664528),
+2025-07-10 18:20:36,612 - 	            (3, 0.9993807224664528)]}
+2025-07-10 18:20:36,612 - 	History (metrics, distributed, evaluate):
+2025-07-10 18:20:36,612 - 	{'accuracy': [(1, 0.0), (2, 0.0), (3, 0.0)],
+2025-07-10 18:20:36,612 - 	 'f1_score': [(1, 0.0), (2, 0.0), (3, 0.0)],
+2025-07-10 18:20:36,612 - 	 'precision': [(1, 0.0), (2, 0.0), (3, 0.0)],
+2025-07-10 18:20:36,612 - 	 'recall': [(1, 0.0), (2, 0.0), (3, 0.0)]}
+2025-07-10 18:20:36,612 - 
+2025-07-10 18:20:36,642 - [SERVER] \u0110ã l\u01b0u mô hình t\u1ed5ng h\u1ee3p cu\u1ed1i cùng vào models_FL_Tab_GSA_FedM\aggregated_model.pt
+2025-07-10 18:20:36,642 - [SERVER] Th\u1eddi gian h\u1ed9i t\u1ee5: 1.55 giây
+2025-07-10 18:20:36,642 - [SERVER] Mô hình h\u1ed9i t\u1ee5 t\u1ea1i vòng 2
+2025-07-10 18:20:36,642 - [SERVER] Server \u0111ã d\u1eebng.
