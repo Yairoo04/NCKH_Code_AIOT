@@ -7,8 +7,12 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 import flwr as fl
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.preprocessing import RobustScaler
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 import pandas as pd
 import dask.dataframe as dd
@@ -21,8 +25,9 @@ from flwr.common import ndarrays_to_parameters, parameters_to_ndarrays
 
 logging.basicConfig(filename="client_log1.txt", level=logging.INFO, format="%(asctime)s - %(message)s")
 
-DATA_PATH = "dataset/data_All_1k.csv"
-MODEL_DIR = "models_FL_Tab_GSA_FedM_1k"
+DATA_PATH = "dataset/data_CICIoT_40.csv"
+MODEL_DIR = "models_FL_Tab_GSA_FedM_40"
+IMAGES_CLIENT_DIR = os.path.join(MODEL_DIR, "images_client")
 MODEL_PATH = os.path.join(MODEL_DIR, "model.pt")
 SCALER_PATH = os.path.join(MODEL_DIR, "scaler.pkl")
 ENCODER_PATH = os.path.join(MODEL_DIR, "label_encoder.pkl")
@@ -42,9 +47,13 @@ class FLClientTabTransformer(fl.client.NumPyClient):
     def __init__(self, client_id):
         self.client_id = client_id
         self.round_count = 0 
+        self.loss_history = []
+        self.accuracy_history = []
+        self.grad_norm_history = []
         print(f"[CLIENT {client_id}] Khởi tạo client TabTransformer...")
         logging.info(f"[CLIENT {client_id}] Khởi tạo client TabTransformer...")
         ensure_dir(MODEL_DIR)
+        ensure_dir(IMAGES_CLIENT_DIR)
 
         try:
             self.X_train_raw, self.y_train, self.categorical_cols, self.num_classes, self.le, self.cluster_labels = load_and_process_data(DATA_PATH)
@@ -191,6 +200,69 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         print(f"[CLIENT {self.client_id}] FedMADE weights: w_perf={w_perf:.4f}, w_conv={w_conv:.4f}, w={w:.4f}")
         logging.info(f"[CLIENT {self.client_id}] FedMADE weights: w_perf={w_perf:.4f}, w_conv={w_conv:.4f}, w={w:.4f}")
         return w
+    
+    def _plot_confusion_matrix(self, y_true, y_pred):
+        cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
+        tn, fp, fn, tp = cm.ravel()
+        fig, ax = plt.subplots(figsize=(6, 5))
+        
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True, xticklabels=['Normal', 'Attack'], 
+                    yticklabels=['Normal', 'Attack'], ax=ax)
+        ax.set_title(f'Confusion Matrix - Client {self.client_id} (Round {self.round_count})')
+        ax.set_xlabel('Predicted Label')
+        ax.set_ylabel('True Label')
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(IMAGES_CLIENT_DIR, f"client_{self.client_id}_confusion_matrix_round_{self.round_count}.png"))
+        plt.close()
+        print(f"[CLIENT {self.client_id}] Đã lưu confusion matrix.")
+        logging.info(f"[CLIENT {self.client_id}] Đã lưu confusion matrix.")
+
+    def _plot_label_distribution(self, y_true, y_pred):
+        if len(y_true) == 0 or len(y_pred) == 0:
+            print(f"[CLIENT {self.client_id}] Không có dữ liệu để vẽ phân phối nhãn.")
+            logging.warning(f"[CLIENT {self.client_id}] Không có dữ liệu để vẽ phân phối nhãn.")
+            return
+        fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+        sns.countplot(x=y_true, ax=axs[0])
+        axs[0].set_title("Ground Truth Distribution")
+        sns.countplot(x=y_pred, ax=axs[1])
+        axs[1].set_title("Prediction Distribution")
+        plt.suptitle(f"Label Distribution - Client {self.client_id}")
+        plt.savefig(os.path.join(IMAGES_CLIENT_DIR, f"client_{self.client_id}_label_distribution_round_{self.round_count}.png"))
+        plt.close()
+        print(f"[CLIENT {self.client_id}] Đã lưu phân phối nhãn.")
+        logging.info(f"[CLIENT {self.client_id}] Đã lưu phân phối nhãn.")
+
+    def _plot_training_progress(self):
+        fig, ax1 = plt.subplots(figsize=(10, 6))
+        ax1.plot(self.loss_history, label="Loss", color="red")
+        ax1.set_xlabel("Epoch")
+        ax1.set_ylabel("Loss", color="red")
+        ax1.grid(True, linestyle='--', alpha=0.7)
+        ax2 = ax1.twinx()
+        ax2.plot(self.accuracy_history, label="Accuracy", color="blue")
+        ax2.set_ylabel("Accuracy", color="blue")
+        plt.title(f"Training Progress - Client {self.client_id}")
+        fig.legend(loc="upper right", bbox_to_anchor=(1.15, 1))
+        fig.tight_layout()
+        plt.savefig(os.path.join(IMAGES_CLIENT_DIR, f"client_{self.client_id}_training_progress_round_{self.round_count}.png"))
+        plt.close()
+        print(f"[CLIENT {self.client_id}] Đã lưu quá trình train.")
+        logging.info(f"[CLIENT {self.client_id}] Đã lưu quá trình train.")
+
+    def _plot_grad_norm(self):
+        plt.figure(figsize=(8, 5))
+        plt.plot(self.grad_norm_history, label="Gradient Norm")
+        plt.xlabel("Round")
+        plt.ylabel("Gradient Norm")
+        plt.title(f"Gradient Norm - Client {self.client_id}")
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.legend()
+        plt.savefig(os.path.join(IMAGES_CLIENT_DIR, f"client_{self.client_id}_grad_norm_round_{self.round_count}.png"))
+        plt.close()
+        print(f"[CLIENT {self.client_id}] Đã lưu biểu đồ Gradient Norm.")
+        logging.info(f"[CLIENT {self.client_id}] Đã lưu biểu đồ Gradient Norm.")
 
     def get_parameters(self, config=None):
         if self.round_count >= MAX_ROUNDS:
@@ -219,6 +291,9 @@ class FLClientTabTransformer(fl.client.NumPyClient):
 
     def fit(self, parameters, config=None):
         self.round_count += 1 
+        self.loss_history = []
+        self.accuracy_history = []
+
         print(f"[CLIENT {self.client_id}] Bắt đầu vòng liên kết {self.round_count}/{MAX_ROUNDS}")
         logging.info(f"[CLIENT {self.client_id}] Bắt đầu vòng liên kết {self.round_count}/{MAX_ROUNDS}")
 
@@ -228,7 +303,6 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             raise RuntimeError(f"Client {self.client_id} đã hoàn thành {MAX_ROUNDS} vòng liên kết.")
 
         try:
-            # Always load the server's aggregated model parameters
             self.set_parameters(parameters)
             self.model.train()
             optimizer = optim.Adam(self.model.parameters(), lr=LR, weight_decay=1e-5)
@@ -242,10 +316,13 @@ class FLClientTabTransformer(fl.client.NumPyClient):
                     optimizer.step()
                 print(f"[CLIENT {self.client_id}] Epoch {epoch+1}/{EPOCHS}, Loss: {loss.item():.4f}")
                 logging.info(f"[CLIENT {self.client_id}] Epoch {epoch+1}/{EPOCHS}, Loss: {loss.item():.4f}")
+                self.loss_history.append(loss.item())
 
             accuracy = self._compute_validation_accuracy()
+            self.accuracy_history.append(accuracy)
             gradients = [p.grad for p in self.model.parameters() if p.grad is not None]
             grad_norm = self._compute_gradient_norm(gradients)
+            self.grad_norm_history.append(grad_norm)
             weight = self._compute_fedmade_weights(accuracy, grad_norm)
 
             gradients = self._sparsify_gradients(gradients, SPARSITY)
@@ -254,7 +331,9 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             torch.save(gradients, grad_buf)
             grad_buf.seek(0)
 
-            self._save_state()  # Save model state after training
+            self._save_state()
+            self._plot_training_progress()
+            self._plot_grad_norm()
             eval_metrics = self.evaluate(parameters, config)
             acc = eval_metrics[0]
             print(f"[CLIENT {self.client_id}] Accuracy sau fit: {acc:.4f}")
@@ -305,6 +384,10 @@ class FLClientTabTransformer(fl.client.NumPyClient):
                     y_true_list.append(labels.numpy())
             y_pred = np.concatenate(y_pred_list)
             y_true = np.concatenate(y_true_list)
+
+            self._plot_confusion_matrix(y_true, y_pred)
+            self._plot_label_distribution(y_true, y_pred)
+
             acc = accuracy_score(y_true, y_pred)
             f1 = f1_score(y_true, y_pred, average='weighted', zero_division=0)
             precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)

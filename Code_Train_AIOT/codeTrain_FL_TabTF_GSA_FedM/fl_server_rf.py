@@ -8,11 +8,15 @@ from flwr.server.strategy import FedAvg
 from flwr.common import Parameters, FitRes, EvaluateRes, Scalar, MetricsAggregationFn, ndarrays_to_parameters, parameters_to_ndarrays
 from tab_transformer_pytorch import TabTransformer
 from sklearn.preprocessing import RobustScaler
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, confusion_matrix
 from sklearn.model_selection import train_test_split
 from data_processing import load_and_process_data
 import time
 import logging
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 logging.basicConfig(
     filename="log_server.txt",
@@ -21,8 +25,9 @@ logging.basicConfig(
     filemode='w'
 )
 
-DATA_PATH = "dataset/data_All_1k.csv"
-MODEL_DIR = "models_FL_Tab_GSA_FedM_1k"
+DATA_PATH = "dataset/data_CICIoT_40.csv"
+MODEL_DIR = "models_FL_Tab_GSA_FedM_40"
+IMAGES_SERVER_DIR = os.path.join(MODEL_DIR, "images_server")
 AGGREGATED_MODEL_PATH = os.path.join(MODEL_DIR, "aggregated_model.pt")
 SIMILARITY_THRESHOLD = 0.2
 LAMBDA_PERF = 0.6
@@ -38,6 +43,7 @@ class FLServerTabTransformer:
         print("[SERVER] Khởi tạo server...")
         logging.info("[SERVER] Khởi tạo server...")
         ensure_dir(MODEL_DIR)
+        ensure_dir(IMAGES_SERVER_DIR)
         X, y, categorical_cols, num_classes, _, _ = load_and_process_data(DATA_PATH)
 
         X_train, X_test, y_train, y_test = train_test_split(
@@ -52,6 +58,12 @@ class FLServerTabTransformer:
         self.X_test_cont = torch.tensor(X_test_cont, dtype=torch.float32)
         self.X_test_cat = torch.tensor(X_test_cat, dtype=torch.long)
         self.y_test = torch.tensor(y_test, dtype=torch.long)
+        self.num_classes = num_classes
+        self.accuracy_history = []
+        self.f1_score_history = []
+        self.precision_history = []
+        self.recall_history = []
+        self.round_times = []
 
         self.hyperparams = {
             "categories": [X[c].nunique() for c in categorical_cols],
@@ -68,9 +80,75 @@ class FLServerTabTransformer:
         self.model = TabTransformer(**self.hyperparams)
         self.previous_accuracy = None
         self.convergence_round = None
-        self.round_times = []
         print(f"[SERVER] TabTransformer sẵn sàng - {self.hyperparams}")
         logging.info(f"[SERVER] TabTransformer sẵn sàng - {self.hyperparams}")
+
+    def _plot_confusion_matrix(self, y_true, y_pred):
+        cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
+        tn, fp, fn, tp = cm.ravel()
+        fig, ax = plt.subplots(figsize=(6, 5))
+        
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True, xticklabels=['Normal', 'Attack'], 
+                    yticklabels=['Normal', 'Attack'], ax=ax)
+        ax.set_title(f'Confusion Matrix - Server (Round {len(self.accuracy_history)})')
+        ax.set_xlabel('Predicted Label')
+        ax.set_ylabel('True Label')
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(IMAGES_SERVER_DIR, f"server_confusion_matrix_round_{len(self.accuracy_history)}.png"))
+        plt.close()
+        print("[SERVER] Đã lưu confusion matrix.")
+        logging.info("[SERVER] Đã lưu confusion matrix.")
+
+    def _plot_label_distribution(self, y_true, y_pred):
+        if len(y_true) == 0 or len(y_pred) == 0:
+            print("[SERVER] Không có dữ liệu để vẽ phân phối nhãn.")
+            logging.warning("[SERVER] Không có dữ liệu để vẽ phân phối nhãn.")
+            return
+        fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+        sns.countplot(x=y_true, ax=axs[0])
+        axs[0].set_title("Ground Truth Distribution")
+        sns.countplot(x=y_pred, ax=axs[1])
+        axs[1].set_title("Prediction Distribution")
+        plt.suptitle("Label Distribution - Server")
+        plt.savefig(os.path.join(IMAGES_SERVER_DIR, f"server_label_distribution_round_{len(self.accuracy_history)}.png"))
+        plt.close()
+        print("[SERVER] Đã lưu phân phối nhãn.")
+        logging.info("[SERVER] Đã lưu phân phối nhãn.")
+
+    def _plot_training_progress(self):
+        fig, ax1 = plt.subplots(figsize=(10, 6))
+        rounds = list(range(1, len(self.accuracy_history) + 1))
+        ax1.plot(rounds, self.accuracy_history, label="Accuracy", color="blue")
+        ax1.set_xlabel("Round")
+        ax1.set_ylabel("Accuracy", color="blue")
+        ax1.grid(True, linestyle='--', alpha=0.7)
+
+        ax2 = ax1.twinx()
+        ax2.plot(rounds, self.f1_score_history, label="F1-Score", color="red")
+        ax2.set_ylabel("F1-Score", color="red")
+
+        plt.title("Training Progress - Server")
+        fig.legend(loc="upper right", bbox_to_anchor=(1.15, 1))
+        fig.tight_layout()
+        plt.savefig(os.path.join(IMAGES_SERVER_DIR, f"server_training_progress_round_{len(self.accuracy_history)}.png"))
+        plt.close()
+        print("[SERVER] Đã lưu quá trình train.")
+        logging.info("[SERVER] Đã lưu quá trình train.")
+
+    def _plot_round_time(self):
+        plt.figure(figsize=(8, 5))
+        rounds = list(range(1, len(self.round_times) + 1))
+        plt.plot(rounds, self.round_times, label="Round Time", color="green")
+        plt.xlabel("Round")
+        plt.ylabel("Time (seconds)")
+        plt.title("Round Time - Server")
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.legend()
+        plt.savefig(os.path.join(IMAGES_SERVER_DIR, f"server_round_time_round_{len(self.round_times)}.png"))
+        plt.close()
+        print("[SERVER] Đã lưu biểu đồ thời gian vòng.")
+        logging.info("[SERVER] Đã lưu biểu đồ thời gian vòng.")
 
     def evaluate(self, model):
         model.eval()
@@ -82,12 +160,18 @@ class FLServerTabTransformer:
             f1 = f1_score(y_true, y_pred, average='weighted', zero_division=0)
             precision = precision_score(y_true, y_pred, average='weighted', zero_division=0)
             recall = recall_score(y_true, y_pred, average='weighted', zero_division=0)
+            self.accuracy_history.append(acc)
+            self.f1_score_history.append(f1)
+            self.precision_history.append(precision)
+            self.recall_history.append(recall)
+            self._plot_confusion_matrix(y_true, y_pred)
+            self._plot_label_distribution(y_true, y_pred)
             print(f"[SERVER] Đánh giá - Accuracy: {acc:.4f}, F1-score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
-            print(f"[SERVER] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.hyperparams['dim_out']).tolist()}")
-            print(f"[SERVER] Phân phối nhãn thực: {np.bincount(y_true, minlength=self.hyperparams['dim_out']).tolist()}")
+            print(f"[SERVER] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.num_classes).tolist()}")
+            print(f"[SERVER] Phân phối nhãn thực: {np.bincount(y_true, minlength=self.num_classes).tolist()}")
             logging.info(f"[SERVER] Đánh giá - Accuracy: {acc:.4f}, F1-score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
-            logging.info(f"[SERVER] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.hyperparams['dim_out']).tolist()}")
-            logging.info(f"[SERVER] Phân phối nhãn thực: {np.bincount(y_true, minlength=self.hyperparams['dim_out']).tolist()}")
+            logging.info(f"[SERVER] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.num_classes).tolist()}")
+            logging.info(f"[SERVER] Phân phối nhãn thực: {np.bincount(y_true, minlength=self.num_classes).tolist()}")
             return {"accuracy": acc, "f1_score": f1, "precision": precision, "recall": recall}
 
     def load_model(self, round_num):
@@ -300,6 +384,8 @@ class FedMADEStrategy(FedAvg):
         self.server.round_times.append(round_time)
         print(f"[SERVER] Thời gian vòng {server_round}: {round_time:.2f} giây")
         logging.info(f"[SERVER] Thời gian vòng {server_round}: {round_time:.2f} giây")
+        self.server._plot_training_progress()
+        self.server._plot_round_time()
 
         try:
             round_model_path = os.path.join(MODEL_DIR, f"aggregated_model_round_{server_round}.pt")
@@ -333,6 +419,8 @@ def start_server():
             if server.convergence_round:
                 print(f"[SERVER] Mô hình hội tụ tại vòng {server.convergence_round}")
                 logging.info(f"[SERVER] Mô hình hội tụ tại vòng {server.convergence_round}")
+            server._plot_training_progress()
+            server._plot_round_time()
         except Exception as e:
             print(f"[SERVER] Lỗi khi lưu mô hình tổng hợp cuối cùng: {e}")
             logging.error(f"[SERVER] Lỗi khi lưu mô hình tổng hợp cuối cùng: {e}")
