@@ -23,22 +23,16 @@ from tab_transformer_pytorch import TabTransformer
 from data_processing import load_and_process_data
 from flwr.common import ndarrays_to_parameters, parameters_to_ndarrays
 
-logging.basicConfig(filename="client_log1.txt", level=logging.INFO, format="%(asctime)s - %(message)s")
-
+OUTPUT_DIR = "fl_40_outputs"
 DATA_PATH = "dataset/data_CICIoT_40.csv"
-MODEL_DIR = "models_FL_Tab_GSA_FedM_40"
-IMAGES_CLIENT_DIR = os.path.join(MODEL_DIR, "images_client")
-MODEL_PATH = os.path.join(MODEL_DIR, "model.pt")
-SCALER_PATH = os.path.join(MODEL_DIR, "scaler.pkl")
-ENCODER_PATH = os.path.join(MODEL_DIR, "label_encoder.pkl")
 EPOCHS = 30
-BATCH_SIZE = 256 
-LR = 0.001  
+BATCH_SIZE = 256
+LR = 0.001
 SPARSITY = 0.5
-SIMILARITY_THRESHOLD = 0.3 
-LAMBDA_PERF = 0.6 
-LAMBDA_CONV = 0.4 
-MAX_ROUNDS = 3 
+SIMILARITY_THRESHOLD = 0.3
+LAMBDA_PERF = 0.6
+LAMBDA_CONV = 0.4
+MAX_ROUNDS = 3
 
 def ensure_dir(d):
     os.makedirs(d, exist_ok=True)
@@ -46,14 +40,29 @@ def ensure_dir(d):
 class FLClientTabTransformer(fl.client.NumPyClient):
     def __init__(self, client_id):
         self.client_id = client_id
-        self.round_count = 0 
+        self.round_count = 0
         self.loss_history = []
         self.accuracy_history = []
         self.grad_norm_history = []
+
+        self.MODEL_DIR = os.path.join(OUTPUT_DIR, "models")
+        self.IMAGES_CLIENT_DIR = os.path.join(OUTPUT_DIR, "images", f"client_{client_id}")
+        self.MODEL_PATH = os.path.join(self.MODEL_DIR, f"model_client_{client_id}.pt")
+        self.SCALER_PATH = os.path.join(self.MODEL_DIR, f"scaler_client_{client_id}.pkl")
+        self.ENCODER_PATH = os.path.join(self.MODEL_DIR, f"label_encoder_client_{client_id}.pkl")
+        self.LOG_PATH = os.path.join(OUTPUT_DIR, "logs", f"client_log_{client_id}.txt")
+        
+        ensure_dir(os.path.dirname(self.LOG_PATH))
+        logging.basicConfig(
+            filename=self.LOG_PATH,
+            level=logging.INFO,
+            format="%(asctime)s - %(message)s"
+        )
+
         print(f"[CLIENT {client_id}] Khởi tạo client TabTransformer...")
         logging.info(f"[CLIENT {client_id}] Khởi tạo client TabTransformer...")
-        ensure_dir(MODEL_DIR)
-        ensure_dir(IMAGES_CLIENT_DIR)
+        ensure_dir(self.MODEL_DIR)
+        ensure_dir(self.IMAGES_CLIENT_DIR)
 
         try:
             self.X_train_raw, self.y_train, self.categorical_cols, self.num_classes, self.le, self.cluster_labels = load_and_process_data(DATA_PATH)
@@ -99,10 +108,10 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         self.hyperparams = {
             "categories": [self.X_train_raw[c].nunique() for c in self.categorical_cols],
             "num_continuous": self.X_train.shape[1],
-            "dim": 128,  
+            "dim": 128,
             "dim_out": self.num_classes,
             "depth": 6,
-            "heads": 8, 
+            "heads": 8,
             "attn_dropout": 0.3,
             "ff_dropout": 0.3,
             "mlp_hidden_mults": (4, 2),
@@ -121,16 +130,16 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         logging.info(f"[CLIENT {client_id}] Mô hình sẵn sàng với {self.num_classes} lớp đầu ra.")
 
     def _model_files_exist(self):
-        return os.path.exists(MODEL_PATH) and os.path.exists(SCALER_PATH) and os.path.exists(ENCODER_PATH)
+        return os.path.exists(self.MODEL_PATH) and os.path.exists(self.SCALER_PATH) and os.path.exists(self.ENCODER_PATH)
 
     def _load_model_and_scaler(self):
         print(f"[CLIENT {self.client_id}] Tải lại model/scaler/encoder...")
         logging.info(f"[CLIENT {self.client_id}] Tải lại model/scaler/encoder...")
         try:
-            state_dict = torch.load(MODEL_PATH, weights_only=True)
+            state_dict = torch.load(self.MODEL_PATH, weights_only=True)
             self.model.load_state_dict(state_dict)
-            self.scaler = joblib.load(SCALER_PATH)
-            self.le = joblib.load(ENCODER_PATH)
+            self.scaler = joblib.load(self.SCALER_PATH)
+            self.le = joblib.load(self.ENCODER_PATH)
             print(f"[CLIENT {self.client_id}] Đã load model/scaler/encoder.")
             logging.info(f"[CLIENT {self.client_id}] Đã load model/scaler/encoder.")
         except Exception as e:
@@ -139,9 +148,9 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             self._save_state()
 
     def _save_state(self):
-        torch.save(self.model.state_dict(), MODEL_PATH)
-        joblib.dump(self.scaler, SCALER_PATH)
-        joblib.dump(self.le, ENCODER_PATH)
+        torch.save(self.model.state_dict(), self.MODEL_PATH)
+        joblib.dump(self.scaler, self.SCALER_PATH)
+        joblib.dump(self.le, self.ENCODER_PATH)
         print(f"[CLIENT {self.client_id}] Đã lưu model/scaler/encoder.")
         logging.info(f"[CLIENT {self.client_id}] Đã lưu model/scaler/encoder.")
 
@@ -200,20 +209,18 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         print(f"[CLIENT {self.client_id}] FedMADE weights: w_perf={w_perf:.4f}, w_conv={w_conv:.4f}, w={w:.4f}")
         logging.info(f"[CLIENT {self.client_id}] FedMADE weights: w_perf={w_perf:.4f}, w_conv={w_conv:.4f}, w={w:.4f}")
         return w
-    
+
     def _plot_confusion_matrix(self, y_true, y_pred):
         cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
         tn, fp, fn, tp = cm.ravel()
         fig, ax = plt.subplots(figsize=(6, 5))
-        
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True, xticklabels=['Normal', 'Attack'], 
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True, xticklabels=['Normal', 'Attack'],
                     yticklabels=['Normal', 'Attack'], ax=ax)
         ax.set_title(f'Confusion Matrix - Client {self.client_id} (Round {self.round_count})')
         ax.set_xlabel('Predicted Label')
         ax.set_ylabel('True Label')
-        
         plt.tight_layout()
-        plt.savefig(os.path.join(IMAGES_CLIENT_DIR, f"client_{self.client_id}_confusion_matrix_round_{self.round_count}.png"))
+        plt.savefig(os.path.join(self.IMAGES_CLIENT_DIR, f"client_{self.client_id}_confusion_matrix_round_{self.round_count}.png"))
         plt.close()
         print(f"[CLIENT {self.client_id}] Đã lưu confusion matrix.")
         logging.info(f"[CLIENT {self.client_id}] Đã lưu confusion matrix.")
@@ -229,7 +236,7 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         sns.countplot(x=y_pred, ax=axs[1])
         axs[1].set_title("Prediction Distribution")
         plt.suptitle(f"Label Distribution - Client {self.client_id}")
-        plt.savefig(os.path.join(IMAGES_CLIENT_DIR, f"client_{self.client_id}_label_distribution_round_{self.round_count}.png"))
+        plt.savefig(os.path.join(self.IMAGES_CLIENT_DIR, f"client_{self.client_id}_label_distribution_round_{self.round_count}.png"))
         plt.close()
         print(f"[CLIENT {self.client_id}] Đã lưu phân phối nhãn.")
         logging.info(f"[CLIENT {self.client_id}] Đã lưu phân phối nhãn.")
@@ -246,7 +253,7 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         plt.title(f"Training Progress - Client {self.client_id}")
         fig.legend(loc="upper right", bbox_to_anchor=(1.15, 1))
         fig.tight_layout()
-        plt.savefig(os.path.join(IMAGES_CLIENT_DIR, f"client_{self.client_id}_training_progress_round_{self.round_count}.png"))
+        plt.savefig(os.path.join(self.IMAGES_CLIENT_DIR, f"client_{self.client_id}_training_progress_round_{self.round_count}.png"))
         plt.close()
         print(f"[CLIENT {self.client_id}] Đã lưu quá trình train.")
         logging.info(f"[CLIENT {self.client_id}] Đã lưu quá trình train.")
@@ -259,7 +266,7 @@ class FLClientTabTransformer(fl.client.NumPyClient):
         plt.title(f"Gradient Norm - Client {self.client_id}")
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.legend()
-        plt.savefig(os.path.join(IMAGES_CLIENT_DIR, f"client_{self.client_id}_grad_norm_round_{self.round_count}.png"))
+        plt.savefig(os.path.join(self.IMAGES_CLIENT_DIR, f"client_{self.client_id}_grad_norm_round_{self.round_count}.png"))
         plt.close()
         print(f"[CLIENT {self.client_id}] Đã lưu biểu đồ Gradient Norm.")
         logging.info(f"[CLIENT {self.client_id}] Đã lưu biểu đồ Gradient Norm.")
@@ -290,7 +297,7 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             raise
 
     def fit(self, parameters, config=None):
-        self.round_count += 1 
+        self.round_count += 1
         self.loss_history = []
         self.accuracy_history = []
 
@@ -376,14 +383,19 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             self.model.eval()
             y_pred_list = []
             y_true_list = []
+            loss = 0.0
+            num_batches = 0
             with torch.no_grad():
                 for cat_data, cont_data, labels in self.test_loader:
                     out = self.model(cat_data, cont_data)
                     y_pred = torch.argmax(out, dim=1)
                     y_pred_list.append(y_pred.numpy())
                     y_true_list.append(labels.numpy())
+                    loss += self.loss_fn(out, labels).item()
+                    num_batches += 1
             y_pred = np.concatenate(y_pred_list)
             y_true = np.concatenate(y_true_list)
+            loss = loss / num_batches if num_batches > 0 else 0.0
 
             self._plot_confusion_matrix(y_true, y_pred)
             self._plot_label_distribution(y_true, y_pred)
@@ -395,11 +407,11 @@ class FLClientTabTransformer(fl.client.NumPyClient):
             num_examples = len(y_true)
             print(f"[CLIENT {self.client_id}] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.num_classes).tolist()}")
             print(f"[CLIENT {self.client_id}] Phân phối nhãn thực: {np.bincount(y_true, minlength=self.num_classes).tolist()}")
-            print(f"[CLIENT {self.client_id}] Accuracy: {acc:.4f}, F1-score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
+            print(f"[CLIENT {self.client_id}] Accuracy: {acc:.4f}, F1-score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, Loss: {loss:.4f}")
             logging.info(f"[CLIENT {self.client_id}] Phân phối dự đoán: {np.bincount(y_pred, minlength=self.num_classes).tolist()}")
             logging.info(f"[CLIENT {self.client_id}] Phân phối nhãn thực: {np.bincount(y_true, minlength=self.num_classes).tolist()}")
-            logging.info(f"[CLIENT {self.client_id}] Accuracy: {acc:.4f}, F1-score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}")
-            return float(acc), num_examples, {"accuracy": acc, "f1_score": f1, "precision": precision, "recall": recall}
+            logging.info(f"[CLIENT {self.client_id}] Accuracy: {acc:.4f}, F1-score: {f1:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, Loss: {loss:.4f}")
+            return float(acc), num_examples, {"accuracy": acc, "f1_score": f1, "precision": precision, "recall": recall, "loss": loss}
         except Exception as e:
             print(f"[CLIENT {self.client_id}] Lỗi khi đánh giá: {str(e)}")
             logging.error(f"[CLIENT {self.client_id}] Lỗi khi đánh giá: {str(e)}")

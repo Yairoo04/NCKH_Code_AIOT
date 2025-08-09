@@ -18,22 +18,24 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+OUTPUT_DIR = "fl_40_outputs"
+DATA_PATH = "dataset/data_CICIoT_40.csv"
+MODEL_DIR = os.path.join(OUTPUT_DIR, "models")
+IMAGES_SERVER_DIR = os.path.join(OUTPUT_DIR, "images", "server")
+LOG_PATH = os.path.join(OUTPUT_DIR, "logs", "log_server.txt")
+AGGREGATED_MODEL_PATH = os.path.join(MODEL_DIR, "aggregated_model.pt")
+SIMILARITY_THRESHOLD = 0.3
+LAMBDA_PERF = 0.6
+LAMBDA_CONV = 0.4
+MAX_ROUNDS = 3
+CONVERGENCE_THRESHOLD = 0.001
+
 logging.basicConfig(
     filename="log_server.txt",
     level=logging.INFO,
     format="%(asctime)s - %(message)s",
     filemode='w'
 )
-
-DATA_PATH = "dataset/data_CICIoT_40.csv"
-MODEL_DIR = "models_FL_Tab_GSA_FedM_40"
-IMAGES_SERVER_DIR = os.path.join(MODEL_DIR, "images_server")
-AGGREGATED_MODEL_PATH = os.path.join(MODEL_DIR, "aggregated_model.pt")
-SIMILARITY_THRESHOLD = 0.2
-LAMBDA_PERF = 0.6
-LAMBDA_CONV = 0.4
-MAX_ROUNDS = 3
-CONVERGENCE_THRESHOLD = 0.001
 
 def ensure_dir(d):
     os.makedirs(d, exist_ok=True)
@@ -87,13 +89,11 @@ class FLServerTabTransformer:
         cm = confusion_matrix(y_true, y_pred, labels=[0, 1])
         tn, fp, fn, tp = cm.ravel()
         fig, ax = plt.subplots(figsize=(6, 5))
-        
-        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True, xticklabels=['Normal', 'Attack'], 
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True, xticklabels=['Normal', 'Attack'],
                     yticklabels=['Normal', 'Attack'], ax=ax)
         ax.set_title(f'Confusion Matrix - Server (Round {len(self.accuracy_history)})')
         ax.set_xlabel('Predicted Label')
         ax.set_ylabel('True Label')
-        
         plt.tight_layout()
         plt.savefig(os.path.join(IMAGES_SERVER_DIR, f"server_confusion_matrix_round_{len(self.accuracy_history)}.png"))
         plt.close()
@@ -123,11 +123,9 @@ class FLServerTabTransformer:
         ax1.set_xlabel("Round")
         ax1.set_ylabel("Accuracy", color="blue")
         ax1.grid(True, linestyle='--', alpha=0.7)
-
         ax2 = ax1.twinx()
         ax2.plot(rounds, self.f1_score_history, label="F1-Score", color="red")
         ax2.set_ylabel("F1-Score", color="red")
-
         plt.title("Training Progress - Server")
         fig.legend(loc="upper right", bbox_to_anchor=(1.15, 1))
         fig.tight_layout()
@@ -193,46 +191,41 @@ class FedMADEStrategy(FedAvg):
         self.server = server
         self.client_clusters = {}
 
-    def aggregate_evaluate_metrics(self, results: List[Tuple[fl.server.client_proxy.ClientProxy, EvaluateRes]]) -> Dict[str, float]:
+    def aggregate_evaluate_metrics(self, results: List[Tuple[fl.server.client_proxy.ClientProxy, EvaluateRes]]) -> Dict[str, Scalar]:
         if not results:
             return {"accuracy": 0.0, "f1_score": 0.0, "precision": 0.0, "recall": 0.0}
-
         accuracies, f1_scores, precisions, recalls = [], [], [], []
         total_examples = 0
-
         for client, res in results:
             try:
                 client_id = client.cid if hasattr(client, 'cid') else str(client)
                 num_examples = getattr(res, "num_examples", res.get("num_examples", 0))
                 metrics = getattr(res, "metrics", res.get("metrics", {}))
-
                 if num_examples == 0 or not metrics:
                     continue
-
                 accuracy = float(metrics.get("accuracy", 0.0))
                 f1 = float(metrics.get("f1_score", 0.0))
                 precision = float(metrics.get("precision", 0.0))
                 recall = float(metrics.get("recall", 0.0))
-
                 accuracies.append(accuracy * num_examples)
                 f1_scores.append(f1 * num_examples)
                 precisions.append(precision * num_examples)
                 recalls.append(recall * num_examples)
                 total_examples += num_examples
-
             except Exception as e:
                 logging.error(f"[SERVER] Lỗi xử lý kết quả từ client {client_id}: {e}")
                 continue
-
         if total_examples == 0:
             return {"accuracy": 0.0, "f1_score": 0.0, "precision": 0.0, "recall": 0.0}
-
-        return {
+        aggregated_metrics = {
             "accuracy": sum(accuracies) / total_examples,
             "f1_score": sum(f1_scores) / total_examples,
             "precision": sum(precisions) / total_examples,
             "recall": sum(recalls) / total_examples
         }
+        print(f"[SERVER] Tổng hợp metrics - Accuracy: {aggregated_metrics['accuracy']:.4f}, F1-score: {aggregated_metrics['f1_score']:.4f}, Precision: {aggregated_metrics['precision']:.4f}, Recall: {aggregated_metrics['recall']:.4f}")
+        logging.info(f"[SERVER] Tổng hợp metrics - Accuracy: {aggregated_metrics['accuracy']:.4f}, F1-score: {aggregated_metrics['f1_score']:.4f}, Precision: {aggregated_metrics['precision']:.4f}, Recall: {aggregated_metrics['recall']:.4f}")
+        return aggregated_metrics
 
     def compute_gradient_similarity(self, grad1, grad2):
         if not grad1 or not grad2:
@@ -257,7 +250,7 @@ class FedMADEStrategy(FedAvg):
             similarity = torch.cosine_similarity(flat_grad1, flat_grad2, dim=0).item()
             print(f"[SERVER] Độ tương đồng gradient: {similarity:.4f}")
             logging.info(f"[SERVER] Độ tương đồng gradient: {similarity:.4f}")
-            return similarity
+            return max(similarity, 0.0)
         except Exception as e:
             print(f"[SERVER] Lỗi tính độ tương đồng: {e}")
             logging.error(f"[SERVER] Lỗi tính độ tương đồng: {e}")
@@ -273,6 +266,10 @@ class FedMADEStrategy(FedAvg):
         return super().configure_fit(server_round, parameters, client_manager)
 
     def configure_evaluate(self, server_round: int, parameters: Parameters, client_manager):
+        if server_round > MAX_ROUNDS:
+            print(f"[SERVER] Đã đạt {MAX_ROUNDS} vòng liên kết, dừng đánh giá.")
+            logging.info(f"[SERVER] Đã đạt {MAX_ROUNDS} vòng liên kết, dừng đánh giá.")
+            return []
         return super().configure_evaluate(server_round, parameters, client_manager)
 
     def aggregate_fit(self, server_round: int, results: List[Tuple[fl.server.client_proxy.ClientProxy, FitRes]], failures: List) -> Tuple[Optional[Parameters], Dict]:
@@ -287,12 +284,15 @@ class FedMADEStrategy(FedAvg):
 
         filtered_results = []
         for client, fit_res in results:
-            filtered_results.append((client, fit_res))
+            metrics = fit_res.metrics if hasattr(fit_res, 'metrics') else fit_res.get('metrics', {})
+            stop_after_this_round = metrics.get("stop_after_this_round", False) if isinstance(metrics, dict) else False
+            if not stop_after_this_round:
+                filtered_results.append((client, fit_res))
 
         if not filtered_results:
-            print(f"[SERVER] Không có client nào hợp lệ để tổng hợp ở vòng {server_round}.")
-            logging.info(f"[SERVER] Không có client nào hợp lệ để tổng hợp ở vòng {server_round}.")
-            return None, {"error": f"No valid clients for round {server_round}"}
+            print(f"[SERVER] Tất cả client đã dừng, kết thúc huấn luyện ở vòng {server_round}.")
+            logging.info(f"[SERVER] Tất cả client đã dừng, kết thúc huấn luyện ở vòng {server_round}.")
+            return None, {"error": "All clients have stopped"}
 
         models = []
         gradients = []
@@ -323,7 +323,7 @@ class FedMADEStrategy(FedAvg):
                 models.append(model)
                 gradients.append(grad_list)
 
-                metrics = fit_res.metrics if hasattr(fit_res, 'metrics') else {}
+                metrics = fit_res.metrics if hasattr(fit_res, 'metrics') else fit_res.get('metrics', {})
                 accuracies.append(float(metrics.get("accuracy", 0.0)))
                 client_ids.append(client_id)
                 self.client_clusters[client_id] = metrics.get("cluster_label", 0)
@@ -355,7 +355,7 @@ class FedMADEStrategy(FedAvg):
                 inliers.append(i)
             print(f"[SERVER] Client {client_ids[i]}: Độ tương đồng trung bình = {avg_similarity:.4f}, Là inlier: {i in inliers}")
             logging.info(f"[SERVER] Client {client_ids[i]}: Độ tương đồng trung bình = {avg_similarity:.4f}, Là inlier: {i in inliers}")
-
+        
         if not inliers:
             print("[SERVER] Không có gradient nào vượt ngưỡng tương đồng! Sử dụng tất cả client để tổng hợp.")
             logging.info("[SERVER] Không có gradient nào vượt ngưỡng tương đồng! Sử dụng tất cả client để tổng hợp.")
