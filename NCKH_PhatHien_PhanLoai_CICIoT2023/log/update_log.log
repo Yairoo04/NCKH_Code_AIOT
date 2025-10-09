@@ -1,0 +1,159 @@
+2025-10-01 22:39:06,000 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-01 22:39:09,146 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-01 22:39:09,147 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-01 22:39:09,986 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1261
+2025-10-01 22:39:10,762 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:11,746 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1262
+2025-10-01 22:39:11,829 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:12,734 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1263
+2025-10-01 22:39:12,801 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:13,731 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1264
+2025-10-01 22:39:13,813 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:14,744 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1265
+2025-10-01 22:39:14,813 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:15,739 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1266
+2025-10-01 22:39:15,809 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:16,747 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1267
+2025-10-01 22:39:16,825 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:17,736 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1268
+2025-10-01 22:39:17,809 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:18,747 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1269
+2025-10-01 22:39:18,845 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:19,748 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1270
+2025-10-01 22:39:19,811 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:20,742 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1271
+2025-10-01 22:39:20,809 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:21,745 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1272
+2025-10-01 22:39:21,804 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:22,741 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1273
+2025-10-01 22:39:22,804 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:23,770 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1274
+2025-10-01 22:39:23,877 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:39:24,747 - DDoSDetector.Update - INFO - Updating dashboard, interval: 1275
+2025-10-01 22:39:24,826 - DDoSDetector.Update - INFO - Dashboard update completed
+2025-10-01 22:40:36,444 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-01 22:40:38,684 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-01 22:40:38,686 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-01 22:46:08,736 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-01 22:46:10,659 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-01 22:46:10,662 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 02:08:05,112 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 02:08:13,114 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 02:08:13,114 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 02:08:28,176 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 02:08:31,515 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 02:08:35,825 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 02:08:40,754 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 02:08:45,887 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 09:25:16,539 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 09:25:25,723 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 09:25:25,725 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 09:25:38,996 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 09:25:39,028 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 09:25:42,646 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 09:25:42,756 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 09:25:47,028 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 09:25:47,068 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 09:25:52,176 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 10:07:35,471 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 10:07:38,762 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 10:07:38,766 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 10:07:42,257 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 10:07:44,149 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 10:07:48,900 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 10:11:27,613 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 10:11:29,868 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 10:11:29,868 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 10:11:32,914 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 10:11:34,193 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 10:19:11,453 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 10:19:14,416 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 10:19:14,417 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 10:27:51,292 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 10:27:53,056 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 10:27:53,056 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 10:27:54,966 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 10:27:55,189 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 10:52:36,724 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 10:52:38,925 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 10:52:38,925 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 10:55:30,055 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 10:55:32,665 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 10:55:32,666 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 10:55:35,376 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 10:55:37,294 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:00:07,967 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:00:11,883 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:00:11,884 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:05:10,084 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:05:12,378 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:05:12,378 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:05:14,749 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:05:15,795 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:21:51,813 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:21:53,924 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:21:53,925 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:21:57,046 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:21:57,862 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:21:58,764 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:21:58,926 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:30:19,160 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:30:22,387 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:30:22,390 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:30:26,069 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:30:26,118 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:30:27,477 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:35:24,907 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:35:27,162 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:35:27,163 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:35:30,351 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:35:31,776 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:35:36,105 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:39:02,823 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:39:05,176 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:39:05,176 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:39:07,490 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:39:09,203 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:41:00,748 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:41:02,718 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:41:02,718 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:41:04,721 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:41:05,785 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:46:27,278 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:46:29,811 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:46:29,815 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:46:31,493 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:46:32,631 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 11:47:44,383 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:47:48,599 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:47:48,600 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:48:10,429 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:48:12,646 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:48:12,647 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:48:15,206 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:51:10,744 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:51:12,855 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:51:12,858 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:51:15,176 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:55:03,362 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 11:55:05,380 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 11:55:05,391 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 11:55:08,502 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 11:55:08,834 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 20:20:28,974 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 20:20:35,647 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 20:20:35,649 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 20:21:54,348 - DDoSDetector.Update - INFO - Accessing home page
+2025-10-02 20:21:56,055 - DDoSDetector.Update - INFO - Fetching system status
+2025-10-02 20:22:57,390 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 20:23:00,003 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 20:23:00,004 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 20:23:52,241 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 20:23:54,313 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 20:23:54,313 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 20:26:06,081 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 20:26:08,062 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 20:26:08,069 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000
+2025-10-02 20:33:08,643 - DDoSDetector.Update - INFO - Detector updater thread started
+2025-10-02 20:33:11,000 - DDoSDetector.Update - INFO - Traffic capture thread started
+2025-10-02 20:33:11,001 - DDoSDetector.Update - INFO - Starting web server on 0.0.0.0:5000

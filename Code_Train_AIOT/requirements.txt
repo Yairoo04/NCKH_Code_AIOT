@@ -1,0 +1,13 @@
+numpy
+pandas
+dask[dataframe]
+joblib
+scikit-learn
+matplotlib
+seaborn
+torch
+torchvision
+torchaudio
+tab-transformer-pytorch
+flwr
+logging

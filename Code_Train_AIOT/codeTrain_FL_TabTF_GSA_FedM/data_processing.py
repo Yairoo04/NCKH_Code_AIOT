@@ -7,6 +7,8 @@ import logging
 import os
 
 def load_and_process_data(file_path: str):
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
     logging.info(f"Starting data processing for file: {file_path}")
     print(f"[DATA] Reading data: {file_path}")
     try:

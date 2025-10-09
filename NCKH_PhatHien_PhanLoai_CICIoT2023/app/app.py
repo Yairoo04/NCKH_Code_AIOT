@@ -5,8 +5,8 @@ import sys
 from config import Config
 from detector import DDoSDetector
 from analyzer import TrafficAnalyzer, run_traffic_analyzer
-from utils import detector_queue, detector_updater, signal_handler, parse_args, logger
 from dashboard import setup_dashboard
+from utils import detector_queue, detector_updater, signal_handler, parse_args, logger, update_logger
 
 flask_app = Flask(__name__)
 config = Config()
@@ -16,22 +16,23 @@ dash_app = setup_dashboard(flask_app, detector, config)
 
 @flask_app.route('/')
 def home():
-    """Trang chủ Flask"""
+    update_logger.info("Accessing home page")
     return render_template('index.html')
 
 @flask_app.route('/api/status')
 def get_status():
-    """API trả về trạng thái hệ thống"""
     try:
+        update_logger.info("Fetching system status")
         return jsonify({'status': detector.current_status})
     except Exception as e:
         logger.error(f"Error in get_status: {e}", exc_info=True)
+        update_logger.error(f"Error in get_status: {e}", exc_info=True)
         return jsonify({'status': 'Error'})
 
 @flask_app.route('/api/metrics')
 def get_metrics():
-    """API trả về các metrics hiện tại"""
     try:
+        update_logger.info("Fetching metrics")
         recent_data = detector.get_recent_data(minutes=1)
         if recent_data.empty:
             return jsonify({
@@ -42,24 +43,25 @@ def get_metrics():
             })
             
         return jsonify({
-            'flow_bytes_s': float(recent_data['flow bytes/s'].mean()),
-            'flow_packets_s': float(recent_data['flow packets/s'].mean()),
+            'flow_bytes_s': float(recent_data['Tot size'].mean() if 'Tot size' in recent_data else 0),
+            'flow_packets_s': float(recent_data['Rate'].mean() if 'Rate' in recent_data else 0),
             'unique_sources': int(recent_data['source ip'].nunique()),
-            'is_attack': detector.current_status == "Under Attack"
+            'is_attack': detector.current_status != "Normal"
         })
     except Exception as e:
         logger.error(f"Error in get_metrics: {e}", exc_info=True)
+        update_logger.error(f"Error in get_metrics: {e}", exc_info=True)
         return jsonify({
-            'flow bytes/s': 0,
-            'flow packets/s': 0,
+            'flow_bytes_s': 0,
+            'flow_packets_s': 0,
             'unique_sources': 0,
             'is_attack': False
         })
 
 @flask_app.route('/api/config', methods=['GET', 'POST'])
 def handle_config():
-    """API để lấy và cập nhật cấu hình"""
     if request.method == 'GET':
+        update_logger.info("Fetching configuration")
         return jsonify({
             'interface': config.interface,
             'window_size': config.window_size,
@@ -69,6 +71,7 @@ def handle_config():
     elif request.method == 'POST':
         try:
             data = request.get_json()
+            update_logger.info(f"Updating configuration: {data}")
             if 'window_size' in data:
                 config.window_size = float(data['window_size'])
             if 'data_retention_minutes' in data:
@@ -78,22 +81,25 @@ def handle_config():
             return jsonify({'status': 'success'})
         except Exception as e:
             logger.error(f"Error updating config: {e}", exc_info=True)
+            update_logger.error(f"Error updating config: {e}", exc_info=True)
             return jsonify({'status': 'error', 'message': str(e)})
         
 @flask_app.route('/api/unblock', methods=['POST'])
 def unblock_ip():
-    """API để bỏ chặn IP"""
     try:
         data = request.get_json()
         ip = data.get('ip')
+        update_logger.info(f"Attempting to unblock IP: {ip}")
         if not ip:
             return jsonify({'status': 'error', 'message': 'IP address required'}), 400
         if ip in detector.blocked_ips:
             detector._unblock_ip(ip)
+            update_logger.info(f"Unblocked IP: {ip}")
             return jsonify({'status': 'success', 'message': f'Unblocked IP {ip}'})
         return jsonify({'status': 'error', 'message': f'IP {ip} not blocked'}), 404
     except Exception as e:
         logger.error(f"Error in unblock_ip: {e}", exc_info=True)
+        update_logger.error(f"Error in unblock_ip: {e}", exc_info=True)
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 if __name__ == '__main__':
@@ -110,6 +116,7 @@ if __name__ == '__main__':
     updater_thread.daemon = True
     updater_thread.start()
     logger.info("Detector updater thread started")
+    update_logger.info("Detector updater thread started")
 
     analyzer = TrafficAnalyzer(
         interface=config.interface,
@@ -124,8 +131,10 @@ if __name__ == '__main__':
     capture_thread.daemon = True
     capture_thread.start()
     logger.info("Traffic capture thread started")
+    update_logger.info("Traffic capture thread started")
 
     logger.info(f"Starting web server on {config.host}:{config.port}")
+    update_logger.info(f"Starting web server on {config.host}:{config.port}")
     flask_app.run(
         debug=config.debug,
         host=config.host,

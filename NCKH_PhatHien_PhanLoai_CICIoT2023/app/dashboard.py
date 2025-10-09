@@ -2,6 +2,7 @@ from dash import Dash, html, dcc
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 import time
+from utils import logger, update_logger
 
 def setup_dashboard(flask_app, detector, config):
     dash_app = Dash(__name__, server=flask_app, url_base_pathname='/dashboard/')
@@ -45,12 +46,7 @@ def setup_dashboard(flask_app, detector, config):
                 html.Div([
                     html.H3("Packet Flow Heatmap"), 
                     dcc.Graph(id='heatmap-graph')
-                ], className='panel heatmap-panel'),
-                
-                html.Div([
-                    html.H3("Feature Importance"), 
-                    dcc.Graph(id='features-graph')
-                ], className='panel features-panel')
+                ], className='panel heatmap-panel')
             ], className='center-column'),
             
             html.Div([
@@ -75,7 +71,6 @@ def setup_dashboard(flask_app, detector, config):
          Output('attack-stats', 'children'),
          Output('top-ips', 'children'), 
          Output('heatmap-graph', 'figure'),
-         Output('features-graph', 'figure'), 
          Output('last-updated', 'children'),
          Output('blocked-ips', 'children')],
         [Input('interval-component', 'n_intervals')]
@@ -91,14 +86,22 @@ def setup_dashboard(flask_app, detector, config):
             }
             alerts = detector.get_alerts(count=20)
             current_time = time.time()
-            
-            display_attack = False
+            last_alert_age = float("inf")
             if alerts:
-                last_alert_time = time.strptime(alerts[-1]['time'], '%H:%M:%S')
-                last_alert_timestamp = time.mktime(time.localtime(current_time)) - time.mktime(last_alert_time)
-                display_attack = last_alert_timestamp < 60
+                last = alerts[-1]
+                if 'epoch' in last:
+                    last_alert_age = current_time - float(last['epoch'])
+                else:
+                    hhmmss = time.strptime(last['time'], '%H:%M:%S')
+                    today = time.localtime(current_time)
+                    last_epoch_guess = time.mktime(today[:3] + hhmmss[3:6] + today[6:])
+                    if last_epoch_guess > current_time:
+                        last_epoch_guess -= 24*3600
+                    last_alert_age = current_time - last_epoch_guess
 
-            if detector.current_status == "Normal" or (not alerts and last_alert_timestamp > 60):
+            under_attack = (detector.current_status != "Normal") and (last_alert_age < 60)
+
+            if not under_attack:
                 status_color = "#2ecc71"
                 status_text = "NORMAL"
             else:
@@ -119,12 +122,14 @@ def setup_dashboard(flask_app, detector, config):
             for alert in reversed(alerts[-10:]):
                 ip = detector.extract_ip_from_message(alert['message'])
                 attack_count = ip_attack_counts.get(ip, 0) if ip else 0
+                probability = alert.get('probability', 0.0)
                 alert_items.append(
                     html.Div([
                         html.Span(f"[{alert['time']}]", className="alert-time"),
                         html.Span("🚫 " if "Blocked" in alert['mitigation'] else "⚠️ ", className="alert-icon"),
                         html.Span(f"{alert['message']}", className="alert-message"),
                         html.Span(f"Attacks: {attack_count}", className="alert-count"),
+                        html.Span(f"Probability: {probability:.2%}", className="alert-probability"),
                         html.Span(f"Mitigation: {alert['mitigation']}", className="alert-mitigation")
                     ], className=f"alert-item {'severe' if 'Blocked' in alert['mitigation'] else 'warning'} new-alert")
                 )
@@ -136,7 +141,7 @@ def setup_dashboard(flask_app, detector, config):
                     html.Div(str(attack_stats['total_attacks']), className="stat-value")
                 ], className="stat-item"),
                 html.Div([
-                    html.Div("Should Blocked IPs", className="stat-label"),
+                    html.Div("Blocked IPs", className="stat-label"),
                     html.Div(str(attack_stats['blocked_ips']), className="stat-value")
                 ], className="stat-item"),
                 html.Div([
@@ -149,6 +154,12 @@ def setup_dashboard(flask_app, detector, config):
                     html.Div("Blocked IP List", className="stat-label"),
                     html.Div(
                         ", ".join(attack_stats['blocked_ips_list']) if attack_stats['blocked_ips_list'] else "None", 
+                        className="stat-value small-text")
+                ], className="stat-item"),
+                html.Div([
+                    html.Div("Avg Attack Probability", className="stat-label"),
+                    html.Div(
+                        f"{recent_data['probability'].mean():.2%}" if 'probability' in recent_data and not recent_data['probability'].isna().all() else "N/A",
                         className="stat-value small-text")
                 ], className="stat-item")
             ]
@@ -172,25 +183,26 @@ def setup_dashboard(flask_app, detector, config):
             ] if blocked_ips else [html.Div("No IPs blocked yet", className="no-blocked-text")]
 
             heatmap_fig = create_heatmap_figure(recent_data)
-            features_fig = create_features_figure(detector)
 
             last_updated = html.Div(
                 f"Last updated: {time.strftime('%H:%M:%S')}",
                 className="update-time"
             )
 
+            # update_logger.info("Dashboard update completed")
             return (
                 status, traffic_fig, alert_items, stats_items, 
-                ip_items, heatmap_fig, features_fig, last_updated, blocked_ip_items
+                ip_items, heatmap_fig, last_updated, blocked_ip_items
             )
             
         except Exception as e:
-            print(f"Error in update_dashboard: {e}")
+            logger.error(f"Error in update_dashboard: {e}", exc_info=True)
+            update_logger.error(f"Error in update_dashboard: {e}", exc_info=True)
             empty_fig = go.Figure()
             empty_fig.update_layout(title='Error loading data')
             return (
                 html.Div("ERROR", style={'backgroundColor': '#e74c3c', 'color': 'white'}),
-                empty_fig, [], [], [], empty_fig, empty_fig,
+                empty_fig, [], [], [], empty_fig,
                 html.Div(f"Error: {time.strftime('%H:%M:%S')}"), []
             )
 
@@ -231,14 +243,16 @@ def setup_dashboard(flask_app, detector, config):
                             for ts in attack_points['timestamp']
                         ]
                         attack_types = attack_points['attack_type']
+                        probabilities = attack_points['probability']
+                        hover_texts = [f"Type: {t}, Prob: {p:.2%}" for t, p in zip(attack_types, probabilities)]
                         traffic_fig.add_trace(go.Scatter(
                             x=attack_timestamps, 
                             y=attack_points['Rate'], 
                             mode='markers', 
                             marker=dict(size=12, color='red', symbol='x'), 
                             name='Attack Points',
-                            text=attack_types,
-                            hoverinfo='text+y+x'
+                            text=hover_texts,
+                            hoverinfo='text'
                         ))
         
         traffic_fig.update_layout(
@@ -304,55 +318,5 @@ def setup_dashboard(flask_app, detector, config):
             )
         
         return heatmap_fig
-
-    def create_features_figure(detector):
-        features_fig = go.Figure()
-        
-        result = detector.get_feature_importance() 
-
-        if result is None:
-            features_fig.update_layout(
-                title='Feature Importance in Attack Detection',
-                xaxis_title='Importance Score',
-                margin=dict(l=150, r=20, t=40, b=20),
-                plot_bgcolor='rgba(240,240,240,0.9)',
-                paper_bgcolor='rgba(0,0,0,0)',
-                font=dict(color='#2c3e50'),
-                height=300,
-                xaxis=dict(range=[0, 1])
-            )
-            return features_fig
-        
-        features, importance_dict = result
-        
-        sorted_items = sorted(importance_dict.items(), key=lambda x: x[1], reverse=True)
-        sorted_features = [item[0] for item in sorted_items]
-        sorted_importance = [item[1] for item in sorted_items]
-        
-        colors = ['rgba(231, 76, 60, 0.8)' if val > 0.6 else 'rgba(52, 152, 219, 0.8)' 
-                 for val in sorted_importance]
-        
-        features_fig.add_trace(go.Bar(
-            y=sorted_features, 
-            x=sorted_importance, 
-            orientation='h', 
-            marker=dict(
-                color=colors, 
-                line=dict(color='rgba(0, 0, 0, 0.2)', width=1)
-            )
-        ))
-        
-        features_fig.update_layout(
-            title='Feature Importance in Attack Detection',
-            xaxis_title='Importance Score',
-            margin=dict(l=150, r=20, t=40, b=20),
-            plot_bgcolor='rgba(240,240,240,0.9)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#2c3e50'),
-            height=300,
-            xaxis=dict(range=[0, 1])
-        )
-        
-        return features_fig
 
     return dash_app
